@@ -8,6 +8,8 @@ from __future__ import division, unicode_literals
 
 import numpy as np
 
+from colour.utilities import tsplit, tstack
+
 __all__ = ['compression_function', 'gamut_compression_operator']
 
 # *****************************************************************************
@@ -132,7 +134,7 @@ def compress(dist, lim, thr, invert, method, power):
     return cdist
 
 
-def main(rgb, method=2, invert=False, hexagonal=False, threshold=0.8, cyan=0.09, magenta=0.24, yellow=0.12, power=1.2, shd_rolloff=0):
+def main(rgb, method=2, invert=False, hexagonal=False, threshold=0.8, cyan=0.09, magenta=0.24, yellow=0.12, power=1.2):
     rgb = np.asarray(rgb)
     threshold = np.asarray(threshold)
     if not threshold.shape:
@@ -161,11 +163,8 @@ def main(rgb, method=2, invert=False, hexagonal=False, threshold=0.8, cyan=0.09,
     # achromatic axis
     ach = np.max(rgb, axis=-1)[..., np.newaxis]
 
-    # achromatic with shadow rolloff below shd_rolloff threshold
-    ach_shd = 1-np.where((1-ach)<(1-shd_rolloff),1-ach,(1-shd_rolloff)+shd_rolloff*np.tanh((((1-ach)-(1-shd_rolloff))/shd_rolloff)))
-
     # distance from the achromatic axis for each color component aka inverse rgb ratios
-    dist = np.where(ach_shd == 0, 0, (ach-rgb)/ach_shd)
+    dist = np.where(ach == 0, 0, np.abs((ach-rgb)/ach))
 
     # compress distance with user controlled parameterized shaper function
     if hexagonal:
@@ -173,11 +172,21 @@ def main(rgb, method=2, invert=False, hexagonal=False, threshold=0.8, cyan=0.09,
         # https://community.acescentral.com/t/a-variation-on-jeds-rgb-gamut-mapper/3060
         sat = np.concatenate([x[..., np.newaxis] for x in [np.max(dist, axis=-1)]*3], axis=-1)
         csat = compress(sat, lim, thr, invert, method, power)
-        cdist = np.where(sat == 0, dist, dist* csat / sat)
+        if not invert:
+            cdist = np.where(sat == 0, dist, dist* csat / sat)
+        else:
+            sat = np.concatenate([x[..., np.newaxis] for x in [np.max(dist, axis=-1)]*3], axis=-1)
+            dist_c, dist_m, dist_y = tsplit(dist)
+            sat_c, sat_m, sat_y = tsplit(sat)
+            csat_c, csat_m, csat_y = tsplit(csat)
+            temp = np.select([sat_c == dist_c, sat_m == dist_m, sat_y == dist_y], [csat_c, csat_m, csat_y])
+            csat_old = tstack((temp, temp, temp))
+            csat_new = compress(csat_old, lim, thr, False, method, power)
+            cdist = dist * csat_old / csat_new
     else:
         cdist = compress(dist, lim, thr, invert, method, power)
 
-    crgb = ach-cdist*ach_shd
+    crgb = ach-cdist*np.abs(ach)
 
     return crgb
 # yapf: enable
