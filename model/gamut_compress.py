@@ -175,7 +175,6 @@ def main(rgb, method=2, invert=False, hexagonal=False, threshold=0.8, cyan=0.09,
         if not invert:
             cdist = np.where(sat == 0, dist, dist* csat / sat)
         else:
-            sat = np.concatenate([x[..., np.newaxis] for x in [np.max(dist, axis=-1)]*3], axis=-1)
             dist_c, dist_m, dist_y = tsplit(dist)
             sat_c, sat_m, sat_y = tsplit(sat)
             csat_c, csat_m, csat_y = tsplit(csat)

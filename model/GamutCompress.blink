@@ -1,4 +1,4 @@
-kernel GamutCompression : public ImageComputationKernel<ePixelWise> {
+﻿kernel GamutCompression : public ImageComputationKernel<ePixelWise> {
   Image<eRead, eAccessPoint, eEdgeClamped> src;
   Image<eWrite> dst;
 
@@ -130,7 +130,7 @@ kernel GamutCompression : public ImageComputationKernel<ePixelWise> {
 
 
   // calculate compressed distance
-  float compress(float x, float l, float t) {
+  float compress(float x, float l, float t, bool inv) {
     float cx, s;
     if (x < t) {
       cx = x;
@@ -202,44 +202,59 @@ kernel GamutCompression : public ImageComputationKernel<ePixelWise> {
     // achromatic axis 
     float ach = max(rgb.x, max(rgb.y, rgb.z));
 
-    // achromatic with shadow rolloff below shd_rolloff threshold
-    float ach_shd = 1.0f-( (1.0f-ach)<(1.0f-shd_rolloff)?(1.0f-ach):(1.0f-shd_rolloff)+shd_rolloff*tanh((((1.0f-ach)-(1.0f-shd_rolloff))/shd_rolloff)));
-
     // distance from the achromatic axis for each color component aka inverse rgb ratios
     // distance is normalized by achromatic, so that 1.0f is at gamut boundary, avoid 0 div
-    float3 dist = ach_shd == 0 ? float3(0.0f, 0.0f, 0.0f) : (ach-rgb)/ach_shd;
+    float3 dist = ach == 0.0f ? float3(0.0f, 0.0f, 0.0f) : fabs((ach-rgb)/ach);
 
     // compress distance with user controlled parameterized shaper function
-    float sat;
-    float3 csat, cdist;
+    float sat, temp;
+    float3 csat, cdist, csat_old, csat_new;
     if (hexagonal) {
       sat = max(dist.x, max(dist.y, dist.z));
       csat = float3(
-        compress(sat, lim.x, thr.x),
-        compress(sat, lim.y, thr.y),
-        compress(sat, lim.z, thr.z));
-      cdist = sat == 0 ? dist : float3(
-        dist.x * csat.x / sat,
-        dist.y * csat.y / sat,
-        dist.z * csat.z / sat);
+        compress(sat, lim.x, thr.x, invert),
+        compress(sat, lim.y, thr.y, invert),
+        compress(sat, lim.z, thr.z, invert));
+      if (invert == 0) {
+        cdist = sat == 0 ? dist : float3(
+          dist.x * csat.x / sat,
+          dist.y * csat.y / sat,
+          dist.z * csat.z / sat);
+      } else {
+        if (fabs(sat - dist.x) < 0.000001f) {
+          temp = csat.x;
+        } else if (fabs(sat - dist.y) < 0.000001f) {
+          temp = csat.y;
+        } else if (fabs(sat - dist.z) < 0.000001f) {
+          temp = csat.z;
+        }
+        csat_old = float3(temp, temp, temp);
+        csat_new.x = compress(csat_old.x, lim.x, thr.x, false);
+        csat_new.y = compress(csat_old.y, lim.y, thr.y, false);
+        csat_new.z = compress(csat_old.z, lim.z, thr.z, false);
+        cdist = float3(
+          dist.x * csat_old.x / csat_new.x,
+          dist.y * csat_old.y / csat_new.y,
+          dist.z * csat_old.z / csat_new.z);
+      }
     } else {
       cdist = float3(
-        compress(dist.x, lim.x, thr.x),
-        compress(dist.y, lim.y, thr.y),
-        compress(dist.z, lim.z, thr.z));
+        compress(dist.x, lim.x, thr.x, invert),
+        compress(dist.y, lim.y, thr.y, invert),
+        compress(dist.z, lim.z, thr.z, invert));
     }
 
     // recalculate rgb from compressed distance and achromatic
     // effectively this scales each color component relative to achromatic axis by the compressed distance
-    float3 crgb = ach-cdist*ach_shd;
+    float3 crgb = ach-cdist*fabs(ach);
 
     // Graph overlay method based on one by Paul Dore
     // https://github.com/baldavenger/DCTLs/tree/master/ACES%20TOOLS
     if (overlay) {
       float3 cramp = float3(
-        compress(2.0f * fpos.x, lim.x, thr.x),
-        compress(2.0f * fpos.x, lim.y, thr.y),
-        compress(2.0f * fpos.x, lim.z, thr.z));
+        compress(2.0f * fpos.x, lim.x, thr.x, invert),
+        compress(2.0f * fpos.x, lim.y, thr.y, invert),
+        compress(2.0f * fpos.x, lim.z, thr.z, invert));
       bool overlay_r = fabs(2.0f * fpos.y - cramp.x) < 0.004f || fabs(fpos.y - 0.5f) < 0.0005f ? true : false;
       bool overlay_g = fabs(2.0f * fpos.y - cramp.y) < 0.004f || fabs(fpos.y - 0.5f) < 0.0005f ? true : false;
       bool overlay_b = fabs(2.0f * fpos.y - cramp.z) < 0.004f || fabs(fpos.y - 0.5f) < 0.0005f ? true : false;

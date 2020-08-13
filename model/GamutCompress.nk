@@ -7,15 +7,13 @@ Group {
  addUserKnob {41 method T compress.method}
  addUserKnob {41 threshold t "Percentage of the gamut to protect. A value of 0.8 means 20% of the outer gamut will be utilized for gamut compression." T compress.threshold}
  addUserKnob {41 power T compress.power}
- addUserKnob {7 shd_rolloff l "shd rolloff" t "Shadow rolloff reduces the gamut compression effect below the specified pixel value. This reduces invertability issues with negative pixels in shadow grain." R 0 0.1}
  addUserKnob {26 distance_limit_label l " " t "Specifies the distance beyond the gamut boundary to map to the gamut boundary for each color component." T "<b>distance limit"}
  addUserKnob {41 cyan t "Maximum distance beyond the green-blue gamut boundary to compress to the gamut boundary." T compress.cyan}
  addUserKnob {41 magenta t "Maximum distance beyond the blue-red gamut boundary to compress to the gamut boundary." T compress.magenta}
  addUserKnob {41 yellow t "Maximum distance beyond the red-green gamut boundary to compress to the gamut boundary." T compress.yellow}
  addUserKnob {6 hexagonal t "Compress secondary colors in addition to primary colors. Uses variation on the algorithm suggested by Nick Shaw https://community.acescentral.com/t/a-variation-on-jeds-rgb-gamut-mapper/3060" +STARTLINE}
  addUserKnob {6 overlay l "graph overlay" +STARTLINE}
- overlay true
- addUserKnob {22 reset t "Reset knobs to default values. Distance limits are calculated based on an the average of a selection of digital cinema cameras." T "n = nuke.thisNode()\nnuke.root().begin()\ndefaults = \{\n    'threshold': 0.8,\n    'shd_rolloff': 0.0,\n    'power': 1.2,\n    'cyan': 0.09,\n    'magenta':0.24,\n    'yellow': 0.12,\n\}\nfor k, v in defaults.items():\n    n\[k].setValue(v)" +STARTLINE}
+ addUserKnob {22 reset t "Reset knobs to default values. Distance limits are calculated based on an the average of a selection of digital cinema cameras." T "n = nuke.thisNode()\nnuke.root().begin()\ndefaults = \{\n    'threshold': 0.8,\n    'power': 1.2,\n    'cyan': 0.09,\n    'magenta':0.24,\n    'yellow': 0.12,\n\}\nfor k, v in defaults.items():\n    n\[k].setValue(v)" +STARTLINE}
  addUserKnob {26 ""}
  addUserKnob {4 direction M {forward inverse}}
  addUserKnob {20 info_tab l Info}
@@ -33,7 +31,7 @@ Group {
   xpos -6
   ypos -174
  }
-set N1c41dc00 [stack 0]
+set N1d150c00 [stack 0]
  Dot {
   name Dot2
   xpos -226
@@ -46,8 +44,8 @@ set N1c41dc00 [stack 0]
   xpos -260
   ypos -130
  }
-set N1c41d400 [stack 0]
-push $N1c41dc00
+set N1d151800 [stack 0]
+push $N1d150c00
  Merge2 {
   inputs 2
   operation minus
@@ -59,32 +57,21 @@ push $N1c41dc00
   xpos -40
   ypos -130
  }
-push $N1c41d400
+push $N1d151800
  Dot {
   name Dot1
   xpos -226
-  ypos -78
+  ypos -79
  }
-set N59f7d400 [stack 0]
  Expression {
-  temp_name0 c_r
-  temp_expr0 1-r
-  temp_name1 c_g
-  temp_expr1 1-g
-  temp_name2 c_b
-  temp_expr2 1-b
-  expr0 1-(c_r<(1-thr)?c_r:(1-thr)+thr*tanh(((c_r-(1-thr))/thr)))
-  expr1 1-(c_g<(1-thr)?c_g:(1-thr)+thr*tanh(((c_g-(1-thr))/thr)))
-  expr2 1-(c_b<(1-thr)?c_b:(1-thr)+thr*tanh(((c_b-(1-thr))/thr)))
-  name toe
-  xpos -150
+  expr0 abs(r)
+  expr1 abs(g)
+  expr2 abs(b)
+  name abs
+  xpos -170
   ypos -82
-  disable {{parent.shd_rolloff==0 x1 0}}
-  addUserKnob {20 Params_tab l Params}
-  addUserKnob {7 thr}
-  thr {{parent.shd_rolloff}}
  }
-set N59f7d000 [stack 0]
+set N21e61000 [stack 0]
  Merge2 {
   inputs 2
   operation divide
@@ -104,7 +91,7 @@ set N59f7d000 [stack 0]
   xpos -6
   ypos -30
  }
-set N59f7c800 [stack 0]
+set N1d1a0000 [stack 0]
  Dot {
   name Dot8
   note_font "Helvetica Bold"
@@ -113,7 +100,7 @@ set N59f7c800 [stack 0]
   xpos 104
   ypos -30
  }
-set N59f7c400 [stack 0]
+set N1d1a1c00 [stack 0]
  Dot {
   name Dot6
   note_font "Helvetica Bold"
@@ -129,8 +116,8 @@ set N59f7c400 [stack 0]
   xpos 180
   ypos 14
  }
-set N59f7dc00 [stack 0]
-push $N59f7c800
+set N1d1a1400 [stack 0]
+push $N1d1a0000
  Switch {
   inputs 2
   which {{parent.hexagonal}}
@@ -180,13 +167,13 @@ push $N59f7c800
    xpos -6
    ypos -30
   }
-set N59fb1800 [stack 0]
+set N1d1d7400 [stack 0]
   Dot {
    name Dot1
    xpos 434
    ypos -30
   }
-set N59fb1400 [stack 0]
+set N1d1d7000 [stack 0]
   Expression {
    expr0 r<thr_x?r:thr_x+(lim_x-thr_x)*log((1+(r/(lim_x-thr_x)-thr_x/(lim_x-thr_x)))/(1-(r/(lim_x-thr_x)-thr_x/(lim_x-thr_x))))/2
    expr1 g<thr_y?g:thr_y+(lim_y-thr_y)*log((1+(g/(lim_y-thr_y)-thr_y/(lim_y-thr_y)))/(1-(g/(lim_y-thr_y)-thr_y/(lim_y-thr_y))))/2
@@ -208,7 +195,7 @@ set N59fb1400 [stack 0]
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N59fb1400
+push $N1d1d7000
   Expression {
    temp_name0 pi
    temp_expr0 3.14159265359
@@ -232,7 +219,7 @@ push $N59fb1400
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N59fb1400
+push $N1d1d7000
   Expression {
    expr0 r<thr_x?r:-log((r-lim_x)/(thr_x-lim_x))*(-thr_x+lim_x)+thr_x
    expr1 g<thr_y?g:-log((g-lim_y)/(thr_y-lim_y))*(-thr_y+lim_y)+thr_y
@@ -254,7 +241,7 @@ push $N59fb1400
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N59fb1400
+push $N1d1d7000
   Expression {
    expr0 (r<thr.r||lim.r<1.0001||r>thr.r+s.r)?r:thr.r+s.r*pow(-(pow((r-thr.r)/s.r,p)/(pow((r-thr.r)/s.r,p)-1)),1/p)
    expr1 (g<thr.g||lim.g<1.0001||g>thr.g+s.g)?g:thr.g+s.g*pow(-(pow((g-thr.g)/s.g,p)/(pow((g-thr.g)/s.g,p)-1)),1/p)
@@ -275,7 +262,7 @@ push $N59fb1400
    addUserKnob {7 p R 1 5}
    p {{parent.power}}
   }
-push $N59fb1400
+push $N1d1d7000
   Expression {
    expr0 r<thr_x?r:(thr_x+1/(1/(r-thr_x)-1/(1-thr_x)+1/(lim_x-thr_x)))
    expr1 g<thr_y?g:(thr_y+1/(1/(g-thr_y)-1/(1-thr_y)+1/(lim_y-thr_y)))
@@ -297,7 +284,7 @@ push $N59fb1400
    addUserKnob {7 lim_z}
    lim_z {{parent.compress_reinhard.lim_z}}
   }
-push $N59fb1400
+push $N1d1d7000
   Expression {
    expr0 r<thr_x?r:exp((r-thr_x+thr_x*log(1-lim_x)-lim_x*thr_x*log(1-lim_x))/(thr_x*(1-lim_x)))*thr_x+lim_x*thr_x
    expr1 "g<thr_y?g:exp((g-thr_y+thr_y*log(1-lim_y)-lim_y*thr_y*log(1-lim_y))/(thr_y*(1-lim_y)))*thr_y+lim_y*thr_y\n"
@@ -326,13 +313,13 @@ push $N59fb1400
    xpos 400
    ypos 134
   }
-push $N59fb1800
+push $N1d1d7400
   Dot {
    name Dot6
    xpos -446
    ypos -30
   }
-set N59fe9800 [stack 0]
+set N1d215800 [stack 0]
   Expression {
    expr0 r<thr_x?r:thr_x+(lim_x-thr_x)*tanh(((r-thr_x)/(lim_x-thr_x)))
    expr1 g<thr_y?g:thr_y+(lim_y-thr_y)*tanh(((g-thr_y)/(lim_y-thr_y)))
@@ -354,7 +341,7 @@ set N59fe9800 [stack 0]
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N59fe9800
+push $N1d215800
   Expression {
    temp_name0 pi
    temp_expr0 3.14159265359
@@ -378,7 +365,7 @@ push $N59fe9800
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N59fe9800
+push $N1d215800
   Expression {
    expr0 r<thr_x?r:lim_x-(lim_x-thr_x)*exp(-(((r-thr_x)*((lim_x)/(lim_x-thr_x))/lim_x)))
    expr1 g<thr_y?g:lim_y-(lim_y-thr_y)*exp(-(((g-thr_y)*((lim_y)/(lim_y-thr_y))/lim_y)))
@@ -400,7 +387,7 @@ push $N59fe9800
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N59fe9800
+push $N1d215800
   Expression {
    expr0 (r<thr.r||lim.r<1.0001)?r:thr.r+s.r*((r-thr.r)/s.r)/(pow(1+pow((r-thr.r)/s.r,p),1/p))
    expr1 (g<thr.g||lim.g<1.0001)?g:thr.g+s.g*((g-thr.g)/s.g)/(pow(1+pow((g-thr.g)/s.g,p),1/p))
@@ -421,7 +408,7 @@ push $N59fe9800
    addUserKnob {7 p R 1 5}
    p {{parent.power}}
   }
-push $N59fe9800
+push $N1d215800
   Expression {
    expr0 r<thr_x?r:(thr_x+1/(1/(r-thr_x)+1/(1-thr_x)-1/(lim_x-thr_x)))
    expr1 g<thr_y?g:(thr_y+1/(1/(g-thr_y)+1/(1-thr_y)-1/(lim_y-thr_y)))
@@ -443,7 +430,7 @@ push $N59fe9800
    addUserKnob {7 lim_z}
    lim_z {{parent.yellow+1}}
   }
-push $N59fe9800
+push $N1d215800
   Expression {
    expr0 r<thr_x?r:thr_x*log(r/thr_x-lim_x)-lim_x*thr_x*log(r/thr_x-lim_x)+thr_x-thr_x*log(1-lim_x)+lim_x*thr_x*log(1-lim_x)
    expr1 g<thr_y?g:thr_y*log(g/thr_y-lim_y)-lim_y*thr_y*log(g/thr_y-lim_y)+thr_y-thr_y*log(1-lim_y)+lim_y*thr_y*log(1-lim_y)
@@ -485,8 +472,8 @@ push $N59fe9800
    ypos 326
   }
  end_group
-set N1c3d9b80 [stack 0]
-push $N59f7c400
+set N1d18ab00 [stack 0]
+push $N1d1a1c00
  Merge2 {
   inputs 2
   operation multiply
@@ -497,7 +484,7 @@ push $N59f7c400
   xpos 70
   ypos 63
  }
-push $N59f7dc00
+push $N1d1a1400
  Merge2 {
   inputs 2
   operation divide
@@ -507,7 +494,7 @@ push $N59f7dc00
   xpos 180
   ypos 111
  }
-set N5a035400 [stack 0]
+set N1d265400 [stack 0]
  Expression {
   expr0 "2 * x / (width - 1)"
   expr1 "2 * x / (width - 1)"
@@ -557,13 +544,13 @@ set N5a035400 [stack 0]
    xpos -6
    ypos -30
   }
-set N5a034800 [stack 0]
+set N1d264800 [stack 0]
   Dot {
    name Dot1
    xpos 434
    ypos -30
   }
-set N5a034400 [stack 0]
+set N1d264400 [stack 0]
   Expression {
    expr0 r<thr_x?r:thr_x+(lim_x-thr_x)*log((1+(r/(lim_x-thr_x)-thr_x/(lim_x-thr_x)))/(1-(r/(lim_x-thr_x)-thr_x/(lim_x-thr_x))))/2
    expr1 g<thr_y?g:thr_y+(lim_y-thr_y)*log((1+(g/(lim_y-thr_y)-thr_y/(lim_y-thr_y)))/(1-(g/(lim_y-thr_y)-thr_y/(lim_y-thr_y))))/2
@@ -585,7 +572,7 @@ set N5a034400 [stack 0]
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N5a034400
+push $N1d264400
   Expression {
    temp_name0 pi
    temp_expr0 3.14159265359
@@ -609,7 +596,7 @@ push $N5a034400
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N5a034400
+push $N1d264400
   Expression {
    expr0 r<thr_x?r:-log((r-lim_x)/(thr_x-lim_x))*(-thr_x+lim_x)+thr_x
    expr1 g<thr_y?g:-log((g-lim_y)/(thr_y-lim_y))*(-thr_y+lim_y)+thr_y
@@ -631,7 +618,7 @@ push $N5a034400
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N5a034400
+push $N1d264400
   Expression {
    expr0 (r<thr.r||lim.r<1.0001||r>thr.r+s.r)?r:thr.r+s.r*pow(-(pow((r-thr.r)/s.r,p)/(pow((r-thr.r)/s.r,p)-1)),1/p)
    expr1 (g<thr.g||lim.g<1.0001||g>thr.g+s.g)?g:thr.g+s.g*pow(-(pow((g-thr.g)/s.g,p)/(pow((g-thr.g)/s.g,p)-1)),1/p)
@@ -652,7 +639,7 @@ push $N5a034400
    addUserKnob {7 p R 1 5}
    p {{parent.power}}
   }
-push $N5a034400
+push $N1d264400
   Expression {
    expr0 r<thr_x?r:(thr_x+1/(1/(r-thr_x)-1/(1-thr_x)+1/(lim_x-thr_x)))
    expr1 g<thr_y?g:(thr_y+1/(1/(g-thr_y)-1/(1-thr_y)+1/(lim_y-thr_y)))
@@ -674,7 +661,7 @@ push $N5a034400
    addUserKnob {7 lim_z}
    lim_z {{parent.compress_reinhard.lim_z}}
   }
-push $N5a034400
+push $N1d264400
   Expression {
    expr0 r<thr_x?r:exp((r-thr_x+thr_x*log(1-lim_x)-lim_x*thr_x*log(1-lim_x))/(thr_x*(1-lim_x)))*thr_x+lim_x*thr_x
    expr1 "g<thr_y?g:exp((g-thr_y+thr_y*log(1-lim_y)-lim_y*thr_y*log(1-lim_y))/(thr_y*(1-lim_y)))*thr_y+lim_y*thr_y\n"
@@ -703,13 +690,13 @@ push $N5a034400
    xpos 400
    ypos 134
   }
-push $N5a034800
+push $N1d264800
   Dot {
    name Dot6
    xpos -446
    ypos -30
   }
-set N5a166800 [stack 0]
+set N1d298800 [stack 0]
   Expression {
    expr0 r<thr_x?r:thr_x+(lim_x-thr_x)*tanh(((r-thr_x)/(lim_x-thr_x)))
    expr1 g<thr_y?g:thr_y+(lim_y-thr_y)*tanh(((g-thr_y)/(lim_y-thr_y)))
@@ -731,7 +718,7 @@ set N5a166800 [stack 0]
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N5a166800
+push $N1d298800
   Expression {
    temp_name0 pi
    temp_expr0 3.14159265359
@@ -755,7 +742,7 @@ push $N5a166800
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N5a166800
+push $N1d298800
   Expression {
    expr0 r<thr_x?r:lim_x-(lim_x-thr_x)*exp(-(((r-thr_x)*((lim_x)/(lim_x-thr_x))/lim_x)))
    expr1 g<thr_y?g:lim_y-(lim_y-thr_y)*exp(-(((g-thr_y)*((lim_y)/(lim_y-thr_y))/lim_y)))
@@ -777,7 +764,7 @@ push $N5a166800
    addUserKnob {7 lim_z}
    lim_z {{parent.lim_z}}
   }
-push $N5a166800
+push $N1d298800
   Expression {
    expr0 (r<thr.r||lim.r<1.0001)?r:thr.r+s.r*((r-thr.r)/s.r)/(pow(1+pow((r-thr.r)/s.r,p),1/p))
    expr1 (g<thr.g||lim.g<1.0001)?g:thr.g+s.g*((g-thr.g)/s.g)/(pow(1+pow((g-thr.g)/s.g,p),1/p))
@@ -798,7 +785,7 @@ push $N5a166800
    addUserKnob {7 p R 1 5}
    p {{parent.power}}
   }
-push $N5a166800
+push $N1d298800
   Expression {
    expr0 r<thr_x?r:(thr_x+1/(1/(r-thr_x)+1/(1-thr_x)-1/(lim_x-thr_x)))
    expr1 g<thr_y?g:(thr_y+1/(1/(g-thr_y)+1/(1-thr_y)-1/(lim_y-thr_y)))
@@ -820,7 +807,7 @@ push $N5a166800
    addUserKnob {7 lim_z}
    lim_z {{parent.yellow+1}}
   }
-push $N5a166800
+push $N1d298800
   Expression {
    expr0 r<thr_x?r:thr_x*log(r/thr_x-lim_x)-lim_x*thr_x*log(r/thr_x-lim_x)+thr_x-thr_x*log(1-lim_x)+lim_x*thr_x*log(1-lim_x)
    expr1 g<thr_y?g:thr_y*log(g/thr_y-lim_y)-lim_y*thr_y*log(g/thr_y-lim_y)+thr_y-thr_y*log(1-lim_y)+lim_y*thr_y*log(1-lim_y)
@@ -871,20 +858,20 @@ push $N5a166800
   xpos 180
   ypos 207
  }
-push $N59f7d400
+push $N1d151800
  Dot {
   name Dot3
   xpos -226
   ypos 234
  }
-push $N59f7d000
+push $N21e61000
  Dot {
   name Dot7
-  xpos -116
-  ypos 186
+  xpos -136
+  ypos 185
  }
-push $N5a035400
-push $N1c3d9b80
+push $N1d265400
+push $N1d18ab00
  Switch {
   inputs 2
   which {{parent.hexagonal}}
@@ -915,12 +902,11 @@ push $N1c3d9b80
   xpos -40
   ypos 230
  }
-set N5a1f5800 [stack 0]
+set N3e0c7800 [stack 0]
  Merge2 {
   inputs 2
   operation screen
   name Merge7
-  selected true
   xpos 180
   ypos 231
  }
@@ -929,17 +915,17 @@ set N5a1f5800 [stack 0]
   xpos 214
   ypos 268
  }
-push $N5a1f5800
+push $N3e0c7800
  Switch {
   inputs 2
   which {{parent.overlay}}
-  name Switch1
+  name switch_overlay
   xpos -40
   ypos 265
  }
  Output {
   name Output
   xpos -40
-  ypos 302
+  ypos 338
  }
 end_group
