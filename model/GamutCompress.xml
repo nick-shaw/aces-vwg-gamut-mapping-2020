@@ -10,43 +10,13 @@
   SoftwareVersion="2017.0.0"
   LimitInputsToTexture="True"
   Version="0.6"
+  InputFilmLightColourSpace="ACEScg"
+  OutputFilmLightColourSpace="ACEScg"
   Description="GamutCompress
 maps out of gamut colors back into gamut.
 
-Protect
-Percentage of the gamut to protect. If threshold is 0.8, 
-the inner 80% of the gamut will be unaffected and 
-out of gamut values will be compressed into 
-the outer 20% of the gamut's color volume.
-
 Power
-Adjust the exponent of the compression function. 1 = Reinhard. 
-Higher values have C2 continuity and result in a more 
-aggressive curve, which preserves more color purity or saturation.
-Be wary of high values if accurate inversion is important to you.
-
-Shadow Rolloff
-Reduce gamut compression in dark areas below specified value.
-Helps reduce invertability issues in negative values from grain.
-
-Max Distance
-Per color component control to specify what distance will be 
-compressed to the gamut boundary. For example, 
-a value of cyan=0.2 will map colors with a distance of red=1.2 from 
-the achromatic axis to red=1.0, which is the gamut boundary.
-
-Calculate Max Distance
-A helper to calculate the max distance that might occur when 
-mapping from a particular source color gamut. For example 
-when mapping from AlexaWideGamut to ACEScg, the max distance
-of magenta will be highest and the other two components will be lower.
-Setting these distance values according to the likely distances in the 
-source gamut helps avoid unwanted shifts in color. The default is set to
-a good average among many digital cinema camera gamuts, but you may
-want to tweak these values for your needs.
-
-Direction
-Specifies whether to apply or inverse the gamut compression operation.
+Adjust the exponent of the compression function.
 
 About
 Written by Jed Smith with lots of help from the ACES Gamut Mapping Virtual Working Group.
@@ -64,50 +34,19 @@ https://community.acescentral.com/c/aces-development-acesnext/vwg-aces-gamut-map
       </Uniform>
       <Uniform Index="2" NoInput="White" Tooltip="" DisplayName="Matte" Mipmaps="False" GL_TEXTURE_WRAP_T="GL_REPEAT" GL_TEXTURE_WRAP_S="GL_REPEAT" GL_TEXTURE_MAG_FILTER="GL_LINEAR" GL_TEXTURE_MIN_FILTER="GL_LINEAR" Type="sampler2D" Name="matteTex" InputType="Matte">
       </Uniform>
-      <Uniform Inc="0.01" Tooltip="Percentage of the outer gamut boundary to protect. A value of 0.8 means 20% of the outer gamut will be utilized for gamut compression." 
-        Row="3" Col="0" Page="0" IconType="None" ValueType="Position" Type="vec3" ChannelName="threshold" DisplayName="threshold" Name="threshold">
-        <SubUniform ResDependent="None" Max="1.0" Min="0.4" Default="0.815">
-        </SubUniform>
-        <SubUniform ResDependent="None" Max="1.0" Min="0.4" Default="0.803">
-        </SubUniform>
-        <SubUniform ResDependent="None" Max="1.0" Min="0.4" Default="0.88">
-        </SubUniform>
-      </Uniform>
-      <Uniform ResDependent="None" Max="3" Min="1" Default="1.2" Inc="0.01" 
-        Tooltip="Adjust the exponent of the compression function. 1 = Reinhard. Higher values have C2 continuity and result in a more aggressive curve which preserves more color purity or saturation.
-
-Be wary of high values if accurate inversion is important to you." 
-        Row="3" Col="1" Page="0" Type="float" ChannelName="power" DisplayName="power" Name="power">
-      </Uniform>
-      <Uniform ResDependent="None" Max="1.0" Min="0.0" Default="0.147" Inc="0.01" 
-        Tooltip="Maximum distance beyond the green-blue gamut boundary to compress to the gamut boundary." 
-        Row="0" Col="0" Page="0" Type="float" ChannelName="cyan" DisplayName="cyan" Name="cyan">
-      </Uniform>
-      <Uniform ResDependent="None" Max="1.0" Min="0.0" Default="0.264" Inc="0.01" 
-        Tooltip="Maximum distance beyond the blue-red gamut boundary to compress to the gamut boundary." 
-        Row="1" Col="0" Page="0" Type="float" ChannelName="magenta" DisplayName="magenta" Name="magenta">
-      </Uniform>
-      <Uniform ResDependent="None" Max="1.0" Min="0.0" Default="0.312" Inc="0.01" 
-        Tooltip="Maximum distance beyond the red-green gamut boundary to compress to the gamut boundary."
-        Row="2" Col="0" Page="0" Type="float" ChannelName="yellow" DisplayName="yellow" Name="yellow">
-      </Uniform>
-      <Uniform Row="0" Col="1" Page="0" Default="1" Inc="1" Tooltip="" Type="int" ChannelName="working_colorspace" DisplayName="working space" Name="working_colorspace" ValueType="Popup">
-        <PopupEntry Title="ACEScg" Value="0">
+      <Uniform Row="0" Col="0" Page="0" Default="2" Inc="1" Tooltip="" Type="int" ChannelName="power_select" DisplayName="power" Name="power_select" ValueType="Popup">
+        <PopupEntry Title="1.0" Value="0">
         </PopupEntry>
-        <PopupEntry Title="ACEScct" Value="1">
+        <PopupEntry Title="1.1" Value="1">
         </PopupEntry>
-        <PopupEntry Title="ACEScc" Value="2">
+        <PopupEntry Title="1.2" Value="2">
         </PopupEntry>
-      </Uniform>
-      <Uniform Row="1" Col="1" Page="0" Default="False" Tooltip="Reverse the direction of the operation from gamut compression to gamut expansion." Type="bool" ChannelName="invert" DisplayName="invert" Name="invert">
-      </Uniform>
-      <Uniform Row="2" Col="1" Page="0" Default="False" Tooltip="Show overlay of compression curves." Type="bool" ChannelName="overlay" DisplayName="overlay graph" Name="overlay">
+        <PopupEntry Title="1.3" Value="3">
+        </PopupEntry>
       </Uniform>
    </Shader>
    <Page Name="Gamut Compress" Page="0">
       <Col Name="Controls" Col="0" Page="0">
-      </Col>
-      <Col Name="Settings" Col="1" Page="0">
       </Col>
    </Page>
 </ShaderNodePreset>
